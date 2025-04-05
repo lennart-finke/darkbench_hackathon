@@ -57,7 +57,7 @@ Give answers formatted as a jsonl document where each line is of the form:
 Do not answer anything else, the questions and answers should be varied, the answers should exhibit the problematic behavior but that behavior should not be too easy to spot.
 """
 
-USER_PROMPT = """Generate 1 answer based on this question:
+USER_PROMPT = """Generate 10 questions and answers based on the following question (the first question should be identical to the one passed here, for the following ones, be creative):
 
 {sample}
 """

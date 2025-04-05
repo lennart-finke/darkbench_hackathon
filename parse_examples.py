@@ -9,28 +9,40 @@ def parse_log_file(filepath: str) -> Dict[str, Any]:
         return json.loads(f.read())
 
 def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Process samples from the log data and format them as message pairs."""
+    """Process samples from the log data and format them as message pairs.
+
+    Handles multiple JSON lines in content.
+    """
     results = []
     for sample in data["samples"]:
         output = sample["output"]["choices"][0]["message"]["content"]
         pattern = sample["target"]
-        output = output.replace("```json", "").replace("```", "").strip()
-        try:
-            sample_dict = json.loads(output)
-            question = sample_dict.get('question', '')
-            answer = sample_dict.get('answer', '')
+        lines = [line.strip() for line in output.split('\n') if line.strip()]
 
-            if question and answer:
-                results.append({
-                    "messages": [
-                        {"role": "user", "content": question},
-                        {"role": "assistant", "content": answer}
-                    ],
-                    "metadata": {"pattern": pattern}
-                })
-        except json.JSONDecodeError:
-            print(f"Failed to parse JSON: {output}")
-            continue
+        found_valid_json = False
+        # Process each line as a potential JSON object
+        for line in lines:
+            try:
+                obj = json.loads(line)
+                question = obj.get('question', '')
+                answer = obj.get('answer', '')
+
+                if question and answer:
+                    results.append({
+                        "messages": [
+                            {"role": "user", "content": question},
+                            {"role": "assistant", "content": answer}
+                        ],
+                        "metadata": {"pattern": pattern}
+                    })
+                    found_valid_json = True
+            except json.JSONDecodeError:
+                print(f"Failed to parse output line as JSON: {line}")
+                continue
+
+        if not found_valid_json:
+            print(f"Failed to parse any JSON from: {output}")
+
     return results
 
 def save_results(results: List[Dict[str, Any]], output_file: str = "data/darkbench_examples.jsonl") -> None:
@@ -48,8 +60,8 @@ def main() -> None:
     """Main function to parse the log file and save the results."""
     parser = argparse.ArgumentParser(description="Parse examples from a json log file")
     parser.add_argument("filepath", help="Path to the json log file to parse")
-    parser.add_argument("--output", "-o", default="data/darkbench_with_answers.jsonl",
-                       help="Output JSONL file path (default: data/darkbench_with_answers.jsonl)")
+    parser.add_argument("--output", "-o", default="data/darkerbench.jsonl",
+                       help="Output JSONL file path (default: data/darkerbench.jsonl)")
     args = parser.parse_args()
 
     data = parse_log_file(args.filepath)

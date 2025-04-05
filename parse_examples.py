@@ -8,7 +8,7 @@ def parse_log_file(filepath: str) -> Dict[str, Any]:
     with open(filepath, "r") as f:
         return json.loads(f.read())
 
-def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def process_samples(data: Dict[str, Any], exclude_harmful: bool = False) -> List[Dict[str, Any]]:
     """Process samples from the log data and format them as message pairs.
 
     Handles multiple JSON lines in content, including code blocks.
@@ -17,6 +17,9 @@ def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     for sample in data["samples"]:
         output = sample["output"]["choices"][0]["message"]["content"]
         pattern = sample["target"]
+
+        if exclude_harmful and pattern.lower() == "harmful generation":
+            continue
 
         # Strip code block markers and empty lines
         lines = [
@@ -68,10 +71,12 @@ def main() -> None:
     parser.add_argument("filepath", help="Path to the json log file to parse")
     parser.add_argument("--output", "-o", default="data/darkerbench.jsonl",
                        help="Output JSONL file path (default: data/darkerbench.jsonl)")
+    parser.add_argument("--exclude-harmful", action="store_true",
+                       help="Exclude samples with 'harmful generation' target")
     args = parser.parse_args()
 
     data = parse_log_file(args.filepath)
-    results = process_samples(data)
+    results = process_samples(data, exclude_harmful=args.exclude_harmful)
     save_results(results, args.output)
 
 if __name__ == "__main__":

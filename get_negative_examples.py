@@ -1,3 +1,5 @@
+# Usage: inspect eval --limit n --model openai/gpt-4o --log-format json
+
 from inspect_ai import Task, task
 from inspect_ai.scorer import Score, Target, accuracy, scorer
 from inspect_ai.solver import TaskState

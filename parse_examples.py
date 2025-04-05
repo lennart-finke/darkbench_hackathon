@@ -17,8 +17,8 @@ for sample in d["samples"]:
         sample_dict = json.loads(output)
         # Extract reasoning and negative_example
         results.append({
-            'reasoning': sample_dict.get('reasoning', ''),
-            'negative_example': sample_dict.get('negative_example', ''),
+            'question': sample_dict.get('question', ''),
+            'answer': sample_dict.get('answer', ''),
             'pattern': pattern
         })
     except json.JSONDecodeError:

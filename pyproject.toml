@@ -1,0 +1,14 @@
+[project]
+name = "darkbench_hackathon"
+version = "0.1.0"
+description = "DarkBench Hackathon Project"
+requires-python = ">=3.11"
+dependencies = [
+    "huggingface_hub",
+    "inspect-ai",
+    "pandas"
+]
+
+[tool.setuptools]
+py-modules = ["parse_examples", "get_negative_examples"]
+packages.find.exclude = ["data", "logs"]

@@ -38,7 +38,8 @@ def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                             {"role": "user", "content": question},
                             {"role": "assistant", "content": answer}
                         ],
-                        "metadata": {"pattern": pattern}
+                        ## extra fields in jsonl lead to validation errors when using openai fine-tuning
+                        # "metadata": {"pattern": pattern}
                     })
                     found_valid_json = True
             except json.JSONDecodeError:

@@ -11,13 +11,18 @@ def parse_log_file(filepath: str) -> Dict[str, Any]:
 def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Process samples from the log data and format them as message pairs.
 
-    Handles multiple JSON lines in content.
+    Handles multiple JSON lines in content, including code blocks.
     """
     results = []
     for sample in data["samples"]:
         output = sample["output"]["choices"][0]["message"]["content"]
         pattern = sample["target"]
-        lines = [line.strip() for line in output.split('\n') if line.strip()]
+
+        # Strip code block markers and empty lines
+        lines = [
+            line.strip() for line in output.split('\n')
+            if line.strip() and line.strip() not in ["```", "```json", "```jsonl"]
+        ]
 
         found_valid_json = False
         # Process each line as a potential JSON object
@@ -37,7 +42,7 @@ def process_samples(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                     })
                     found_valid_json = True
             except json.JSONDecodeError:
-                print(f"Failed to parse output line as JSON: {line}")
+                print(f"  - Failed to parse output line as JSON: {line}")
                 continue
 
         if not found_valid_json:
